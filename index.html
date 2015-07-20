@@ -1,0 +1,150 @@
+<!DOCTYPE HTML!>
+<html>
+    <head>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, widdiv=device-widdiv, height=device-height" />
+    <style>
+        input {
+            min-height:1.3cm;
+            min-width:80%;
+            max-width:100%;
+            margin-top: 0.3cm;
+            padding:0.1cm;
+            font-size:0.5cm;
+            border-color: green;
+            background-color: rgba(200,255,200,0.3);
+        }
+        .reset {
+            border-color:red;
+            background-color: rgba(255,200,200,0.3);
+        }
+        body{
+            text-align: center;
+        }
+    </style>
+    </head>
+    <body style='align:center' >
+        <input type=button value="Rotate View" 
+                ontouchstart = "set_params('view',true,false,false);"
+                ontouchend = "reset_params();"
+                >
+        <!-- <input type=button value="Rotate and move View" 
+                ontouchstart = "set_params('view',true,true,false);"
+                ontouchend = "reset_params();"> 
+        <input type=button value="move view" 
+                ontouchstart = "set_params('view',false,true,false);"
+                ontouchend = "reset_params();"> -->
+        <input class=reset type=button value="Reset view angle" onclick="client.send('reset_view_angle');">
+        <input type=button value="Rotate selection" 
+                ontouchstart = "set_params('selection',true,false,false);"
+                ontouchend = "reset_params();">
+      <!--  <input type=button value="rotate and move selection" 
+                ontouchstart = "set_params('selection',true,true,false);"
+                ontouchend = "reset_params();">
+        <input type=button value="move selection" 
+                ontouchstart = "set_params('selection',false,true,false);"
+                ontouchend = "reset_params();"> -->
+        <input type=button value="Rotate camera" 
+                ontouchstart = "set_params('camera',true,false,false);"
+                ontouchend = "reset_params();">
+        <!-- <input type=button value="rotate and move camera" 
+                ontouchstart = "set_params('camera',true,true,false);"
+                ontouchend = "reset_params();">
+        <input type=button value="move camera" 
+                ontouchstart = "set_params('camera',false,true,false);"
+                ontouchend = "reset_params();"> -->
+        <input type=button value="Rotate camera absolute" 
+                ontouchstart = "set_params('camera',true,false,true);"
+                ontouchend = "reset_params();">
+        <input class=reset type=button value="Reset camera angle" onclick="client.send('reset_camera_angle');">
+        <!-- <textarea id='debug' rows=5></textarea> -->
+
+    </body>
+    <script>
+        addr="ws://" + document.location.hostname + ":9001/";
+        console.log(addr)
+        client = new WebSocket(addr);
+        xtext=document.getElementById('debug')
+        move_offsets={x:-0.25,y:-0.01,z:0.32}
+        
+        window.what=''
+        window.rotate = false
+        window.move = false 
+        window.orientation = false
+        function set_params(Swhat,Srotate,Smove,Sorientation){
+            window.what=Swhat
+            window.rotate=Srotate
+            window.move=Smove
+            window.orientation=Sorientation
+        }
+        function reset_params() {
+            window.what=''
+            window.rotate = false
+            window.move = false
+            window.orientation = false
+        }
+        
+        function do_rotate(what,x,y,z)
+        {
+            client.send('rotate_' + window.what + ' ' + x + ' ' + y + ' ' + z + "\n");
+        }
+
+        function do_rotateabsolute(what,x,y,z)
+        {
+            client.send('rotateabsolute_' + window.what + ' ' + x + ' ' + y + ' ' + z + "\n");
+        }
+
+        function do_move(what,x,y,z)
+        {
+            
+            client.send('move_' + window.what + ' ' + (move_offsets.x+x) + ' ' + (move_offsets.y+y) + ' ' + (move_offsets.z+z) + "\n");
+        }
+
+        function deviceMotionHandler(e) 
+        {
+            //xtext.innerHTML = window.what + window.rotate + window.move + window.orientation
+            if (window.what){
+                if (window.rotate && !window.orientation){
+                    with (e.rotationRate){
+                        if ((alpha) || (gamma) || (beta)){
+                            if (window.what == 'view')
+                                do_rotate(window.what,beta* 0.00245436718 ,-alpha * 0.00245436718 ,-gamma * 0.00245436718)
+                            else
+                                do_rotate(window.what,alpha* 0.00245436718 ,beta * 0.00245436718 ,gamma * 0.00245436718)
+                        }
+                    }
+                }
+                if (window.move){
+                    with (e.acceleration){
+                        if (x||y||z){
+                            do_move(window.what,x,y,z)
+                        }
+                    }
+                }
+            }
+        }
+
+        function deviceOrientationHandler(e) 
+        {
+            //xtext.innerHTML=e.alpha+"\n"+e.beta+"\n"+e.gamma;
+            //xtext.innerHTML=what+', '+rotate+ "," + move;
+            if (window.what){
+                if (window.rotate && window.orientation){
+                    with (e){
+                        if ((alpha) || (gamma) || (beta)){
+                            do_rotateabsolute(window.what,beta* 0.0245436718 ,gamma * 0.0245436718 ,alpha * 0.0245436718)
+                        }
+                    }
+                }
+            }
+        }
+
+        if (window.DeviceMotionEvent) {
+            window.addEventListener('devicemotion', deviceMotionHandler, false);
+            window.addEventListener('deviceorientation', deviceOrientationHandler, false);
+        } else {
+            alert('Device Motion Event NOT supported');
+        }
+        
+    </script>
+    </head>
+</html>

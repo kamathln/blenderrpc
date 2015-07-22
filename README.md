@@ -10,16 +10,16 @@ Installation
 Using
 -----
 
-Once installed, and Blender starts,
-
-Point your mobiles phone's (recent, html5 compliant) browser to yourpc'sipaddress:9000
+* Once installed, and Blender starts,
+* Point your mobiles phone's (recent, html5 compliant) browser to yourpc'sipaddress:9000
+* for rotating, press and hold one of the rotation buttons and rotate your phone.  
 
 
 Warnings
 --------
 
 * This set was written for my purposes (playing around) and put on the web in the hopes someone may find it usefull or gets inspired for a solution in real world.
-* Different browsers report the angle in different scales. So your mileage may vary. Feel free to "calibrate" your index.html. Also Dear lazy web, feel free to write an initial 
+* Different browsers report the angle in different scales. So your mileage may vary. Feel free to "calibrate" your index.html. Also Dear lazy web, feel free to write an initial calibration section to the index.html
 
 
 Developing:
